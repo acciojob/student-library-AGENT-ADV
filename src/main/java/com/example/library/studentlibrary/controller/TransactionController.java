@@ -9,17 +9,21 @@ import org.springframework.web.bind.annotation.*;
 
 //Add required annotations
 
+@RestController
 public class TransactionController {
 
+    TransactionService transactionService;
     //Add required annotations
-    public ResponseEntity issueBook(@RequestParam("cardId") int cardId, @RequestParam("bookId") int bookId) throws Exception{
+    @PostMapping("/transaction/issueBook")
+    public ResponseEntity<String> issueBook(@RequestParam("cardId") int cardId, @RequestParam("bookId") int bookId) throws Exception{
 
-       return new ResponseEntity<>("transaction completed", HttpStatus.ACCEPTED);
+       return new ResponseEntity<>( transactionService.issueBook(cardId,bookId), HttpStatus.ACCEPTED);
     }
 
     //Add required annotations
-    public ResponseEntity returnBook(@RequestParam("cardId") int cardId, @RequestParam("bookId") int bookId) throws Exception{
+    @PostMapping("/transaction/returnBook")
+    public ResponseEntity<Transaction> returnBook(@RequestParam("cardId") int cardId, @RequestParam("bookId") int bookId) throws Exception{
 
-        return new ResponseEntity<>("transaction completed", HttpStatus.ACCEPTED);
+        return new ResponseEntity<>(transactionService.returnBook(cardId, bookId), HttpStatus.ACCEPTED);
     }
 }

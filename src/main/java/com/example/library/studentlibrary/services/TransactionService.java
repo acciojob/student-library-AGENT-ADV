@@ -33,7 +33,30 @@ public class TransactionService {
     @Value("${books.fine.per_day}")
     int fine_per_day;
 
-    public String issueBook(int cardId, int bookId) throws Exception {
+    public String issueBook(int cardId, int bookId) throws Exception
+    {
+        Card card = cardRepository5.findById(cardId).get();
+        Book book = bookRepository5.findById(bookId).get();
+        if(book == null || book.isAvailable() == false )
+            throw new Exception("Book is either unavailable or not present");
+
+        if(card == null || card.getCardStatus() == CardStatus.DEACTIVATED)
+            throw new Exception("Card is invalid");
+
+        if(card.getBooks().size() >= max_allowed_books)
+            throw new Exception("Book limit has reached for this card");
+
+
+        Transaction transaction = new Transaction();
+        transaction.setFineAmount(0);
+        transaction.setIssueOperation(true);
+        transaction.setTransactionStatus(TransactionStatus.SUCCESSFUL);
+        transaction.setBook(book);
+        transaction.setCard(card);
+        book.setAvailable(false);
+
+        transactionRepository5.save(transaction);
+
         //check whether bookId and cardId already exist
         //conditions required for successful transaction of issue book:
         //1. book is present and available
@@ -46,7 +69,7 @@ public class TransactionService {
 
         //Note that the error message should match exactly in all cases
 
-       return null; //return transactionId instead
+       return transaction.getTransactionId(); //return transactionId instead
     }
 
     public Transaction returnBook(int cardId, int bookId) throws Exception{
@@ -54,11 +77,27 @@ public class TransactionService {
         List<Transaction> transactions = transactionRepository5.find(cardId, bookId,TransactionStatus.SUCCESSFUL, true);
         Transaction transaction = transactions.get(transactions.size() - 1);
 
+        Card card = cardRepository5.findById(cardId).get();
+        Book book = bookRepository5.findById(bookId).get();
+
+        int amount = 0;// to calculate
+
+
+        book.setAvailable(true);
+
+        Transaction returnBookTransaction = new Transaction();
+        returnBookTransaction.setFineAmount(amount);
+        returnBookTransaction.setIssueOperation(true);
+        returnBookTransaction.setTransactionStatus(TransactionStatus.SUCCESSFUL);
+        returnBookTransaction.setBook(book);
+        returnBookTransaction.setCard(card);
+
+        transactionRepository5.save(returnBookTransaction);
         //for the given transaction calculate the fine amount considering the book has been returned exactly when this function is called
         //make the book available for other users
         //make a new transaction for return book which contains the fine amount as well
 
-        Transaction returnBookTransaction  = null;
+
         return returnBookTransaction; //return the transaction after updating all details
     }
 }

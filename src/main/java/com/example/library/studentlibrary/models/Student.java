@@ -1,6 +1,10 @@
 package com.example.library.studentlibrary.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -8,6 +12,10 @@ import javax.persistence.*;
 import java.util.Date;
 
 @Entity
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
 public class Student {
 
     @Id
@@ -21,8 +29,11 @@ public class Student {
 
     private String country;
 
-    public Student() {
-    }
+    @CreationTimestamp
+    private Date createdOn;
+
+    @UpdateTimestamp
+    private Date updatedOn;
 
     // alter table student add foreign key constraint card references Card(id)
 
@@ -31,12 +42,6 @@ public class Student {
     @JsonIgnoreProperties("student")
     private Card card;
 
-
-    @CreationTimestamp
-    private Date createdOn;
-
-    @UpdateTimestamp
-    private Date updatedOn;
 
     @Override
     public String toString() {
