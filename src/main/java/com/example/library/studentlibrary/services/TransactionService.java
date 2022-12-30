@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -80,13 +81,25 @@ public class TransactionService {
         Card card = cardRepository5.findById(cardId).get();
         Book book = bookRepository5.findById(bookId).get();
 
-        int amount = 0;// to calculate
+        Date issuedDate=transaction.getTransactionDate();
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(issuedDate);
+
+        // manipulate date
+        cal.add(Calendar.DATE, getMax_allowed_days);
+        Date allowedDate = cal.getTime();
+        Date currentDate=new Date();
+        long time_difference = currentDate.getTime() - allowedDate.getTime();
+        // Calculate time difference in days
+        long days_difference = (time_difference / (1000*60*60*24)) % 365;
+        int fine=(int)days_difference*fine_per_day;
+
 
 
         book.setAvailable(true);
 
         Transaction returnBookTransaction = new Transaction();
-        returnBookTransaction.setFineAmount(amount);
+        returnBookTransaction.setFineAmount(fine);
         returnBookTransaction.setIssueOperation(true);
         returnBookTransaction.setTransactionStatus(TransactionStatus.SUCCESSFUL);
         returnBookTransaction.setBook(book);
