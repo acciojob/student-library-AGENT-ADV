@@ -38,26 +38,28 @@ public class TransactionService {
     {
         Card card = cardRepository5.findById(cardId).get();
         Book book = bookRepository5.findById(bookId).get();
+        String transactionId ="";
         if(book == null || book.isAvailable() == false )
             throw new Exception("Book is either unavailable or not present");
 
-        if(card == null || card.getCardStatus() == CardStatus.DEACTIVATED)
+       else if(card == null || card.getCardStatus() == CardStatus.DEACTIVATED)
             throw new Exception("Card is invalid");
 
-        if(card.getBooks().size() >= max_allowed_books)
+        else if(card.getBooks().size() >= max_allowed_books)
             throw new Exception("Book limit has reached for this card");
 
+        else {
+            Transaction transaction = new Transaction();
+            transaction.setFineAmount(0);
+            transaction.setIssueOperation(true);
+            transaction.setTransactionStatus(TransactionStatus.SUCCESSFUL);
+            transaction.setBook(book);
+            transaction.setCard(card);
+            book.setAvailable(false);
+            transactionId = transaction.getTransactionId();
 
-        Transaction transaction = new Transaction();
-        transaction.setFineAmount(0);
-        transaction.setIssueOperation(true);
-        transaction.setTransactionStatus(TransactionStatus.SUCCESSFUL);
-        transaction.setBook(book);
-        transaction.setCard(card);
-        book.setAvailable(false);
-
-        transactionRepository5.save(transaction);
-
+            transactionRepository5.save(transaction);
+        }
         //check whether bookId and cardId already exist
         //conditions required for successful transaction of issue book:
         //1. book is present and available
@@ -70,7 +72,7 @@ public class TransactionService {
 
         //Note that the error message should match exactly in all cases
 
-       return transaction.getTransactionId(); //return transactionId instead
+       return transactionId; //return transactionId instead
     }
 
     public Transaction returnBook(int cardId, int bookId) throws Exception{
@@ -89,7 +91,7 @@ public class TransactionService {
         cal.add(Calendar.DATE, getMax_allowed_days);
         Date allowedDate = cal.getTime();
         Date currentDate=new Date();
-        long time_difference = currentDate.getTime() - allowedDate.getTime();
+        long time_difference = currentDate.getTime() - allowedDate.getTime();//in milliseconds
         // Calculate time difference in days
         long days_difference = (time_difference / (1000*60*60*24)) % 365;
         int fine=(int)days_difference*fine_per_day;
